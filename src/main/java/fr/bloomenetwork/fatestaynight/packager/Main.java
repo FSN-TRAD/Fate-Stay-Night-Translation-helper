@@ -1,8 +1,8 @@
 package fr.bloomenetwork.fatestaynight.packager;
 
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
@@ -10,12 +10,11 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.BorderFactory;
 import javax.swing.JSplitPane;
+import javax.swing.SwingConstants;
 
 import java.awt.event.*;
 
@@ -25,14 +24,10 @@ import java.awt.event.*;
  */
 public class Main extends JFrame {
     
-    //Paramètres
-    private String searchInFile = "";
-    private int searchInPage = 1;
-    
     //Composants graphiques
     private JButton startButton;
-    private JTextField searchInFileTextField;
-    private JTextField searchInPageTextField;
+    private JTextField tfSearchInFile;
+    private JTextField tfSearchInPage;
     private JTextArea textOutputJapanese;
     private JTextArea textOutputEnglish;
     
@@ -40,8 +35,8 @@ public class Main extends JFrame {
         
         //Configuration des divers éléments graphiques
         startButton = new JButton("Démarrer");
-        searchInFileTextField = new JTextField(searchInFile);
-        searchInPageTextField = new JTextField(searchInPage);
+        tfSearchInFile = new JTextField("", 16);
+        tfSearchInPage = new JTextField("", 4);
 
         textOutputJapanese = new JTextArea();
         textOutputJapanese.setRows(15);
@@ -51,7 +46,7 @@ public class Main extends JFrame {
         textOutputEnglish.setRows(15);
         textOutputEnglish.setEditable(false);
         textOutputEnglish.setLineWrap(true);
-        JPanel topPane = new JPanel();
+        JPanel topPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
         
         //Listener sur le bouton qui exécute le programme
         startButton.addActionListener(e -> {
@@ -60,7 +55,7 @@ public class Main extends JFrame {
             textOutputJapanese.replaceSelection("");
             textOutputEnglish.selectAll();
             textOutputEnglish.replaceSelection("");
-            PageFetcher pageFetch = new PageFetcher(searchInFileTextField.getText(), Integer.parseInt(searchInPageTextField.getText()));
+            PageFetcher pageFetch = new PageFetcher(tfSearchInFile.getText(), Integer.parseInt(tfSearchInPage.getText()));
             
             System.setOut(new PrintStreamCapturer(textOutputJapanese, System.out));
             System.setErr(new PrintStreamCapturer(textOutputJapanese, System.err, "[ERREUR] "));
@@ -71,17 +66,14 @@ public class Main extends JFrame {
         });
         
         //Mise en page de la fenêtre 
-        this.setTitle("Fate/Stay Night Translation - 0.1 requinDr");
+        this.setTitle("Fate/Stay Night [Translation helper] - 0.2 requinDr");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setSize(780, 360);
-        topPane.add(new JLabel(" Nom du fichier : "));
-        topPane.add(searchInFileTextField);
-        topPane.add(new JLabel(" Page : "));
-        topPane.add(searchInPageTextField);
-        topPane.add(new JLabel(""));
+        this.setSize(780, 380);
+        topPane.add(new JLabel(" Nom du fichier : ", SwingConstants.RIGHT));
+        topPane.add(tfSearchInFile);
+        topPane.add(new JLabel(" Page : ", SwingConstants.RIGHT));
+        topPane.add(tfSearchInPage);
         topPane.add(startButton);
-        topPane.setLayout(new GridLayout(3, 2)); 
-        
 
         JScrollPane scrollPaneJapanese = new JScrollPane(textOutputJapanese);
         scrollPaneJapanese.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -96,7 +88,7 @@ public class Main extends JFrame {
         splitPane.setResizeWeight(0.5);
 
         this.add(topPane, BorderLayout.NORTH);
-        this.add(splitPane, BorderLayout.SOUTH);
+        this.add(splitPane);
         
         this.setLocationRelativeTo(null);
         this.setVisible(true);
