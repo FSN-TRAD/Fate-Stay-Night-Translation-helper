@@ -42,10 +42,12 @@ public class Main extends JFrame {
         textOutputJapanese.setRows(15);
         textOutputJapanese.setEditable(false);
         textOutputJapanese.setLineWrap(true);
+        textOutputJapanese.setWrapStyleWord(true);
         textOutputEnglish = new JTextArea();
         textOutputEnglish.setRows(15);
         textOutputEnglish.setEditable(false);
         textOutputEnglish.setLineWrap(true);
+        textOutputEnglish.setWrapStyleWord(true);
         JPanel topPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
         
         //Listener sur le bouton qui exécute le programme
