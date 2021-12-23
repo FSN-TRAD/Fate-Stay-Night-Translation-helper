@@ -20,7 +20,7 @@ dependencies {
 }
 
 version = '0.1'
-mainClassName = 'fr.bloomenetwork.fatestaynight.packager.Main'
+mainClassName = 'fr.fatestaynight.packager.Main'
 
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
