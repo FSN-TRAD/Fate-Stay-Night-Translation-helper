@@ -55,12 +55,12 @@ public class Main extends JFrame {
             textOutputEnglish.selectAll();
             textOutputEnglish.replaceSelection("");
 
-            boolean codeAffiche = true;
+            boolean showCode = true;
             if (checkbox.isSelected()) {
-                codeAffiche = false;
+                showCode = false;
             }
             // Crée un objet pageFetch correspondant à la page désirée
-            PageFetcher pageFetch = new PageFetcher(tfSearchInFile.getText(), Integer.parseInt(tfSearchInPage.getText()), codeAffiche);
+            PageFetcher pageFetch = new PageFetcher(tfSearchInFile.getText(), Integer.parseInt(tfSearchInPage.getText()), showCode);
 
             textOutputJapanese.setText(pageFetch.fetchText("japanese"));
 
