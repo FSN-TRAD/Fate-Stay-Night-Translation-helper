@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -46,6 +47,39 @@ public class PageFetcher {
 		return content;
     }
 
+    public static String lectureFichier(String nomFichier, int pageNum, String language, Charset charset) throws IOException {
+        String fullName = language + "/" + nomFichier;
+        String pageStart = "*page" + (pageNum -1) + "|";
+		String pageEnd = "*page" + pageNum + "|";
+		String content = "";
+		String line;
+
+        BufferedReader file = new BufferedReader(new InputStreamReader(
+            new FileInputStream(fullName), charset));
+        
+        // saute toutes les lignes jusqu'à la fin de la page précédente
+        do {
+            line = file.readLine();
+        } while ( (line != null) && (line.indexOf(pageStart) == -1) );
+
+        if (line != null) {
+            // sauvegarde les lignes jusqu'à la fin de la page
+            while (((line = file.readLine()) != null) && (line.indexOf(pageEnd) == -1)) {
+                content += line + "\n";
+            }
+        }
+        file.close();
+        
+        if (line == null) {
+            return null;
+        }
+
+        // Corrige tous les sauts de ligne
+        content = content.replaceAll("\\n\\r", "\n");
+
+		return content;
+    }
+
 	/**
      * Lit les lignes d'un fichier texte en les stockant au fur et à mesure dans un String.
      * Le nom du fichier à traiter est passé en argument.
@@ -54,40 +88,18 @@ public class PageFetcher {
      * @throws IOException
      */
     public static String lectureFichier(String nomFichier, int pageNum, String language) {
-        String folder = language + "/";
-        String pageStart = "*page" + (pageNum -1) + "|";
-		String pageEnd = "*page" + pageNum + "|";
-		String content = "";
-		String line;
-        int i = 0;
-
         try {
-            BufferedReader file = new BufferedReader(new InputStreamReader(
-                new FileInputStream(folder + nomFichier), StandardCharsets.UTF_16));
-
-            while ((line = file.readLine()) != null) {
-                content = content + line + "\n";
-                i++;
-            }
-
-            file.close();
-
-            // Corrige tous les sauts de ligne
-            content = content.replaceAll("\\n\\r", "\n");
-
-            // Extrait la page qui nous intéresse
-            try {
-                content = content.substring(content.lastIndexOf(pageStart), content.lastIndexOf(pageEnd));
-            } catch (StringIndexOutOfBoundsException e) {
-                System.err.println("La page " + pageNum + " n'existe pas dans ce fichier.");
-                content = "La page " + pageNum + " n'existe pas dans ce fichier.";
-            }
-        } catch (IOException ex) {
-            System.err.println("Problème d'accès au fichier " + nomFichier);
-            content = "Problème d'accès au fichier " + nomFichier;
+            String content = lectureFichier(nomFichier, pageNum, language, StandardCharsets.UTF_16);
+            if (content == null)
+                content = lectureFichier(nomFichier, pageNum, language, StandardCharsets.UTF_8);
+            if (content == null)
+                content = "La page " + pageNum + " n'existe pas dans le fichier " + language + "/" + nomFichier + ".";
+            return content;
+        } catch (IOException e) {
+            String content = "Problème d'accès au fichier " + nomFichier;
+            System.err.println(content);
+            return content;
         }
-
-		return content;
     }
 
     /**
