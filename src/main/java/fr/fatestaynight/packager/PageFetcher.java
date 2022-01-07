@@ -44,7 +44,7 @@ public class PageFetcher {
             return hideCode(content);
         }
 
-		return content;
+        return styleContent(content);
     }
 
     public static String lectureFichier(String nomFichier, int pageNum, String language, Charset charset) throws IOException {
@@ -65,7 +65,7 @@ public class PageFetcher {
         if (line != null) {
             // sauvegarde les lignes jusqu'à la fin de la page
             while (((line = file.readLine()) != null) && (line.indexOf(pageEnd) == -1)) {
-                content += line + "\n";
+                content += line + "<br>";
             }
         }
         file.close();
@@ -73,9 +73,6 @@ public class PageFetcher {
         if (line == null) {
             return null;
         }
-
-        // Corrige tous les sauts de ligne
-        content = content.replaceAll("\\n\\r", "\n");
 
 		return content;
     }
@@ -93,22 +90,23 @@ public class PageFetcher {
             if (content == null)
                 content = lectureFichier(nomFichier, pageNum, language, StandardCharsets.UTF_8);
             if (content == null)
-                content = "La page " + pageNum + " n'existe pas dans le fichier " + language + "/" + nomFichier + ".";
+                content = "<span class='error'>La page " + pageNum + " n'existe pas dans le fichier " + language
+                        + "/" + nomFichier + ".</span>";
             return content;
         } catch (IOException e) {
-            String content = "Problème d'accès au fichier " + nomFichier;
+            String content = "<span class='error'>Problème d'accès au fichier " + nomFichier + "</span>";
             System.err.println(content);
             return content;
         }
     }
 
     /**
-     * Cache le code de la page
+     * Hide the page script parts
      * @param content
-     * @return
+     * @return the content without the code
      */
     public static String hideCode(String content) {
-        String lines[] = content.split("\\r?\\n");
+        String lines[] = content.split("<br>");
         String contentWCode = "";
         
         for (int i = 0; i < lines.length; i++) {
@@ -119,11 +117,36 @@ public class PageFetcher {
                 // Supprime les crochets et leur contenu pour les lignes qui en ont
                 lines[i] = lines[i].replaceAll("\\[[A-z0123456789]*]", "");
                 // Recrée un texte dépourvu de code
-                contentWCode = contentWCode + lines[i] + "\n\n";
+                contentWCode = contentWCode + lines[i] + "<br><br>";
             }
         }
 
         return contentWCode;
+    }
+
+    /**
+     * Style the page content
+     * @param content
+     * @return contentStyled
+     */
+    public static String styleContent(String content) {
+        String lines[] = content.split("<br>");
+        String contentStyled = "";
+        
+        for (int i = 0; i < lines.length; i++) {
+            // Define the class for lines beginning with @
+            if (lines[i].startsWith("@")) {
+                lines[i] = "<span class='atCode'>" + lines[i] + "</span>";
+            }
+            // Define the class for [text]
+            if (lines[i].contains("[")) {
+                lines[i] = lines[i].replaceAll("\\[", "<span class='bracketCode'>[");
+                lines[i] = lines[i].replaceAll("\\]", "]</span>");
+            }
+            contentStyled = contentStyled + lines[i] + "<br>";
+        }
+
+        return contentStyled;
     }
 	
 }

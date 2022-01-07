@@ -20,12 +20,16 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.JSplitPane;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.NumberFormatter;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 
 /**
  * Spinner used for day, scene and page.
@@ -158,23 +162,23 @@ enum Language {
  * @author requinDr, loicfr
  */
 public class Main extends JFrame {
-    private static final String WINDOW_TITLE = "Fate/Stay Night [Translation helper] - 0.4";
-    private static final int DEFAULT_WIDTH = 780;
-    private static final int DEFAULT_HEIGHT = 400;
+    private static final String WINDOW_TITLE = "Fate/stay night [Translation helper] - 0.5";
+    private static final int DEFAULT_WIDTH = 820;
+    private static final int DEFAULT_HEIGHT = 480;
     
-    //Composants graphiques
+    // Composants graphiques
     private JButton start_btn;
     private JTextField fileName_tf;
     private NumberSpinner pageSpinner;
     private JCheckBox hideCode_cb;
-    private JTextArea[] textPanels;
+    private JTextPane[] textPanels;
 
     private PageFetcher pageFetch;
     private Language[] languages;
     
     public Main() {
         
-        //Mise en page de la fenêtre 
+        // Mise en page de la fenêtre 
         this.setTitle(WINDOW_TITLE);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -187,6 +191,13 @@ public class Main extends JFrame {
         
         this.setLocationRelativeTo(null);
         this.setVisible(true);
+    }
+
+    // Automatically refresh pages when spinner value is changed
+    class SpinnerListener implements ChangeListener {
+        public void stateChanged(ChangeEvent evt) {
+          updateTexts();
+        }
     }
 
     /**
@@ -209,12 +220,18 @@ public class Main extends JFrame {
         routeSelect.setSelectedIndex(0);
         NumberSpinner daySelect = new NumberSpinner(2, 1, 20);
         NumberSpinner sceneSelect = new NumberSpinner(2, 0, 99);
-        //fileConstructPane.add(new JLabel("Route :", SwingConstants.RIGHT));
+        
         fileConstructPane.add(routeSelect);
         fileConstructPane.add(new JLabel("Jour :", SwingConstants.RIGHT));
         fileConstructPane.add(daySelect);
         fileConstructPane.add(new JLabel("Scène :", SwingConstants.RIGHT));
         fileConstructPane.add(sceneSelect);
+        this.pageSpinner = new NumberSpinner(3, 1, 999);
+        pageSpinner.addChangeListener(new SpinnerListener()); // check for a value change
+
+        fileConstructPane.add(new JLabel("Page :", SwingConstants.RIGHT));
+        fileConstructPane.add(this.pageSpinner);
+
         fileSelectPane.add(fileConstructPane);
         fileSelectPane.setMinimumSize(fileSelectPane.getSize());
         
@@ -235,10 +252,6 @@ public class Main extends JFrame {
         topPane.add(fileSelectPane);
 
         JPanel navigationPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        this.pageSpinner = new NumberSpinner(3, 1, 999);
-
-        navigationPane.add(new JLabel("Page :", SwingConstants.RIGHT));
-        navigationPane.add(this.pageSpinner);
 
         this.hideCode_cb = new JCheckBox("Cacher le code");
         navigationPane.add(hideCode_cb);
@@ -260,17 +273,25 @@ public class Main extends JFrame {
         // one panel for each parameter
         int nb_panels = languages.length;
         JPanel[] panes = new JPanel[nb_panels];
-        this.textPanels = new JTextArea[nb_panels];
+        this.textPanels = new JTextPane[nb_panels];
+
+        // add a HTMLEditorKit to the jpane
+        HTMLEditorKit kit = new HTMLEditorKit();
+        // add a stylesheet for the displayed content
+        StyleSheet styleSheet = kit.getStyleSheet();
 
         for(int i=0; i< nb_panels; i++) {
             panes[i] = new JPanel(new BorderLayout());
 
-            final JTextArea textArea = new JTextArea();
-            textArea.setRows(15);
-            textArea.setEditable(false);
-            textArea.setLineWrap(true);
-            textArea.setWrapStyleWord(true);
-            this.textPanels[i] = textArea;
+            final JTextPane textPane = new JTextPane();
+            textPane.setEditorKit(kit);
+            styleSheet.addRule("body {margin:4px; text-align:justify;}");
+            styleSheet.addRule(".error {color:#922B21;}");
+            styleSheet.addRule(".atCode {color:#21618C;}");
+            styleSheet.addRule(".bracketCode {color:#196F3D;}");
+            textPane.setEditable(false);
+            textPane.setContentType("text/html");
+            this.textPanels[i] = textPane;
 
             JScrollPane scrollPane = new JScrollPane(this.textPanels[i]);
             scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -284,7 +305,7 @@ public class Main extends JFrame {
                     if (btn.isSelected()) {
                         Language lang = Language.valueOf(btn.getText().replaceAll("-", "_"));
                         this.languages[index] = lang;
-                        textArea.setText(pageFetch.fetchText(lang.dir_name));
+                        textPane.setText("<body>" + pageFetch.fetchText(lang.dir_name) + "</body>");
                     }
                 }
             };
