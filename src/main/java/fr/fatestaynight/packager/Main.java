@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.util.Arrays;
 import java.util.function.Consumer;
@@ -30,6 +31,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.NumberFormatter;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+import java.awt.event.ActionEvent;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -214,16 +216,29 @@ public class Main extends JFrame {
      * and other options.
      */
     private void setupTopMenu() {
-        JPanel topPane = new JPanel(new GridLayout(1,2));
+        JPanel topPane = new JPanel(new GridLayout(2,1));
 
-        JPanel fileSelectPane = new JPanel(new GridLayout(2,1));
+        // 1re ligne
+        JPanel fileSelectPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         JPanel fileNamePane = new JPanel(new FlowLayout(FlowLayout.LEFT));
         this.fileName_tf = new JTextField("", 16);
         fileNamePane.add(new JLabel(" Nom du fichier :", SwingConstants.RIGHT));
         fileNamePane.add(this.fileName_tf);
-        fileSelectPane.add(fileNamePane);
 
+        this.exe_location = new JButton("fate.exe");
+        exe_location.setToolTipText("Sélectionnez l'emplacement de fate.exe");
+        this.exe_location.addActionListener(e -> this.findExe());
+
+        this.game_launch = new JButton("Lancer le jeu");
+        game_launch.setEnabled(false);
+        this.game_launch.addActionListener(e -> this.gameLauncher());
+
+        fileSelectPane.add(fileNamePane);
+        fileSelectPane.add(this.exe_location);
+        fileSelectPane.add(this.game_launch);
+
+        // 2e ligne
         JPanel fileConstructPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JComboBox<String> routeSelect = new JComboBox<>(Route.names());
         routeSelect.setSelectedIndex(0);
@@ -241,8 +256,6 @@ public class Main extends JFrame {
         fileConstructPane.add(new JLabel("Page :", SwingConstants.RIGHT));
         fileConstructPane.add(this.pageSpinner);
 
-        fileSelectPane.add(fileConstructPane);
-        fileSelectPane.setMinimumSize(fileSelectPane.getSize());
         
         Consumer<Object> updateFileName = (ignoredParam) -> {
             if (this.fileName_tf.hasFocus()) // event provoqué par le soft (non implémenté)
@@ -258,25 +271,24 @@ public class Main extends JFrame {
 
         updateFileName.accept(null);
 
-        topPane.add(fileSelectPane);
 
         JPanel navigationPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         this.hideCode_cb = new JCheckBox("Cacher le code");
-        navigationPane.add(hideCode_cb);
+        navigationPane.add(this.hideCode_cb);
+        hideCode_cb.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                updateTexts();
+            }
+        });
 
-        this.start_btn = new JButton("Démarrer");
+        this.start_btn = new JButton("Comparer");
         this.start_btn.addActionListener(e -> this.updateTexts());
-        this.exe_location = new JButton("Emplacement fate.exe");
-        this.exe_location.addActionListener(e -> this.findExe());
-        this.game_launch = new JButton("Lancer le jeu");
-        game_launch.setEnabled(false);
-        this.game_launch.addActionListener(e -> this.gameLauncher());
         navigationPane.add(this.start_btn);
-        navigationPane.add(this.exe_location);
-        navigationPane.add(this.game_launch);
 
-        topPane.add(navigationPane);
+        fileConstructPane.add(navigationPane);
+        topPane.add(fileSelectPane);
+        topPane.add(fileConstructPane);
 
         this.add(topPane, BorderLayout.NORTH);
     }
