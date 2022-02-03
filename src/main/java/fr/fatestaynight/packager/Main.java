@@ -383,7 +383,8 @@ public class Main extends JFrame {
      * Ouvre une fenêtre de dialogue pour trouver le fichier fate.exe
      */
     private void findExe() {
-        JFileChooser choix = new JFileChooser();
+        String currentDir = System.getProperty("user.dir");
+        JFileChooser choix = new JFileChooser(currentDir);
         FileFilter filter = new FileNameExtensionFilter("EXE File","exe");
         
         choix.setFileFilter(filter);
