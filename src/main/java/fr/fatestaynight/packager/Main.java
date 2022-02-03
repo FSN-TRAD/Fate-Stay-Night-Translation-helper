@@ -409,19 +409,11 @@ public class Main extends JFrame {
         Runtime run = Runtime.getRuntime();
 
         try {
-            Process p = run.exec(cmd);
-            try(BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream(), "UTF-8"))) {
-                String line;
-    
-                while ((line = input.readLine()) != null) {
-                    System.out.println(line);
-                }
-            }
+            Process p = run.exec("cmd /c " + cmd);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 
     public static void main(String[] args) {
         Main main = new Main();
