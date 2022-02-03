@@ -31,6 +31,12 @@ import javax.swing.text.NumberFormatter;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import javax.swing.JFileChooser;
+
 /**
  * Spinner used for day, scene and page.
  */
@@ -162,12 +168,14 @@ enum Language {
  * @author requinDr, loicfr
  */
 public class Main extends JFrame {
-    private static final String WINDOW_TITLE = "Fate/stay night [Translation helper] - 0.5";
+    private static final String WINDOW_TITLE = "Fate/stay night [Translation helper] - 0.6";
     private static final int DEFAULT_WIDTH = 820;
     private static final int DEFAULT_HEIGHT = 480;
     
     // Composants graphiques
     private JButton start_btn;
+    private JButton exe_location;
+    private JButton game_launch;
     private JTextField fileName_tf;
     private NumberSpinner pageSpinner;
     private JCheckBox hideCode_cb;
@@ -175,6 +183,7 @@ public class Main extends JFrame {
 
     private PageFetcher pageFetch;
     private Language[] languages;
+    private String path;
     
     public Main() {
         
@@ -258,7 +267,14 @@ public class Main extends JFrame {
 
         this.start_btn = new JButton("Démarrer");
         this.start_btn.addActionListener(e -> this.updateTexts());
+        this.exe_location = new JButton("Emplacement fate.exe");
+        this.exe_location.addActionListener(e -> this.findExe());
+        this.game_launch = new JButton("Lancer le jeu");
+        game_launch.setEnabled(false);
+        this.game_launch.addActionListener(e -> this.gameLauncher());
         navigationPane.add(this.start_btn);
+        navigationPane.add(this.exe_location);
+        navigationPane.add(this.game_launch);
 
         topPane.add(navigationPane);
 
@@ -346,6 +362,46 @@ public class Main extends JFrame {
         for(int i=0; i < this.textPanels.length; i++) {
             this.textPanels[i].setText("");
             this.textPanels[i].setText(this.pageFetch.fetchText(this.languages[i].dir_name));
+        }
+    }
+
+    /**
+     * Ouvre une fenêtre de dialogue pour trouver le fichier fate.exe
+     */
+    private void findExe() {
+        JFileChooser choix = new JFileChooser();
+        int retour = choix.showOpenDialog(null);
+        if (retour == JFileChooser.APPROVE_OPTION) {
+            // un fichier a été choisi (sortie par OK)
+            // nom du fichier  choisi 
+            choix.getSelectedFile().getName();
+            // chemin absolu du fichier choisi
+            path = choix.getSelectedFile().getAbsolutePath();
+            game_launch.setEnabled(true);
+        }
+    }
+
+    /**
+     * Lance le jeu à la scène et page désirée
+     */
+    private void gameLauncher() {
+        int page = pageSpinner.getIntValue() -1;
+        String cmd = "\"" + path + "\""
+                     + " -flowchartopenbyscenario=" + fileName_tf.getText()
+                     + " -skiplabel=*page" + page;
+        Runtime run = Runtime.getRuntime();
+
+        try {
+            Process p = run.exec(cmd);
+            try(BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream(), "UTF-8"))) {
+                String line;
+    
+                while ((line = input.readLine()) != null) {
+                    System.out.println(line);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
