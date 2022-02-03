@@ -28,6 +28,8 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.NumberFormatter;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
@@ -274,6 +276,10 @@ public class Main extends JFrame {
 
         JPanel navigationPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
+        this.start_btn = new JButton("Comparer");
+        this.start_btn.addActionListener(e -> this.updateTexts());
+        navigationPane.add(this.start_btn);
+
         this.hideCode_cb = new JCheckBox("Cacher le code");
         navigationPane.add(this.hideCode_cb);
         hideCode_cb.addActionListener(new ActionListener(){
@@ -281,10 +287,6 @@ public class Main extends JFrame {
                 updateTexts();
             }
         });
-
-        this.start_btn = new JButton("Comparer");
-        this.start_btn.addActionListener(e -> this.updateTexts());
-        navigationPane.add(this.start_btn);
 
         fileConstructPane.add(navigationPane);
         topPane.add(fileSelectPane);
@@ -382,6 +384,9 @@ public class Main extends JFrame {
      */
     private void findExe() {
         JFileChooser choix = new JFileChooser();
+        FileFilter filter = new FileNameExtensionFilter("EXE File","exe");
+        
+        choix.setFileFilter(filter);
         int retour = choix.showOpenDialog(null);
         if (retour == JFileChooser.APPROVE_OPTION) {
             // un fichier a été choisi (sortie par OK)
