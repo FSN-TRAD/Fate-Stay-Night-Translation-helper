@@ -49,8 +49,8 @@ public class PageFetcher {
 
     public static String lectureFichier(String nomFichier, int pageNum, String language, Charset charset) throws IOException {
         String fullName = language + "/" + nomFichier;
-        String pageStart = "*page" + (pageNum -1) + "|";
-		String pageEnd = "*page" + pageNum + "|";
+        String pageStart = "*page" + (pageNum -1);
+		String pageEnd = "*page" + pageNum;
 		String content = "";
 		String line;
 
