@@ -36,8 +36,11 @@ import javax.swing.text.html.StyleSheet;
 import java.awt.event.ActionEvent;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 import javax.swing.JFileChooser;
 
@@ -175,6 +178,7 @@ public class Main extends JFrame {
     private static final String WINDOW_TITLE = "Fate/stay night [Translation helper] - 0.6";
     private static final int DEFAULT_WIDTH = 820;
     private static final int DEFAULT_HEIGHT = 480;
+    private static final String CONFIG_FILE = "config_fsn-helper.txt";
     
     // Composants graphiques
     private JButton start_btn;
@@ -187,7 +191,7 @@ public class Main extends JFrame {
 
     private PageFetcher pageFetch;
     private Language[] languages;
-    private String path;
+    private String path = "";
     
     public Main() {
         
@@ -233,7 +237,17 @@ public class Main extends JFrame {
         this.exe_location.addActionListener(e -> this.findExe());
 
         this.game_launch = new JButton("Lancer le jeu");
-        game_launch.setEnabled(false);
+        // cherche dans la config s'il y a un chemin enregistré
+        try {
+            BufferedReader brFile = new BufferedReader(new FileReader(CONFIG_FILE));
+            path = brFile.readLine();
+            brFile.close();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        if (path.equals("")){
+            game_launch.setEnabled(false);
+        }
         this.game_launch.addActionListener(e -> this.gameLauncher());
 
         fileSelectPane.add(fileNamePane);
@@ -384,6 +398,9 @@ public class Main extends JFrame {
      */
     private void findExe() {
         String currentDir = System.getProperty("user.dir");
+        if (!path.equals("")) {
+            currentDir = path; 
+        }
         JFileChooser choix = new JFileChooser(currentDir);
         FileFilter filter = new FileNameExtensionFilter("EXE File","exe");
         
@@ -396,6 +413,15 @@ public class Main extends JFrame {
             // chemin absolu du fichier choisi
             path = choix.getSelectedFile().getAbsolutePath();
             game_launch.setEnabled(true);
+
+            // écrit le chemin dans un fichier de config
+            try {
+                PrintWriter writer = new PrintWriter(CONFIG_FILE, "UTF-8");
+                writer.println(path);
+                writer.close();
+            } catch (FileNotFoundException | UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
     }
 
