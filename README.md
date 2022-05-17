@@ -1,3 +1,5 @@
+Abandonné en faveur d'une version web.
+
 # Fate/Stay Night [Réalta Nua] Translation Helper
 
 Permet d'afficher le contenu d'une page à la fois en anglais et en japonais.
